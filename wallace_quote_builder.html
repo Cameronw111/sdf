@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wallace International — Quote Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- DATALISTS -->
+<datalist id="dl-intl"><option value="Int'l Freight / Low Sulphur"><option value="General Rate Increase (GRI)"><option value="Low Sulphur Surcharge (LSS)"><option value="Peak Season Surcharge (PSS)"><option value="Documentation Fee"><option value="Bunker Adjustment Factor (BAF)"><option value="War Risk Surcharge"><option value="Congestion Surcharge"></datalist>
+<datalist id="dl-local"><option value="Port Service Charge"><option value="Terminal Handling Charge (THC)"><option value="Delivery Order Fee"><option value="Sea Cargo Automation"><option value="Destination Infrastructure Surcharge"><option value="Wharfage Charge"><option value="AQIS Inspection Fee"><option value="Storage / Demurrage"></datalist>
+<datalist id="dl-cust"><option value="Professional Service Fee"><option value="Postage & Petties"><option value="Status Confirmation CMR"><option value="Quarantine PAC Declaration"><option value="Customs Communication Fee"><option value="Import Declaration (SAC)"><option value="DAFF Biosecurity Levy"></datalist>
+<datalist id="dl-del"><option value="Cartage to Destination"><option value="Fuel Surcharge"><option value="Booking Fee LCL"><option value="Tolls Fee"><option value="Tail-lift Fee"><option value="After Hours Delivery"><option value="Residential Delivery Fee"></datalist>
+<datalist id="dl-basis"><option value="Flat"><option value="Per CBM"><option value="Per Tonne"><option value="Per CBM / Tonne"><option value="Per Shipment"><option value="Per B/L"><option value="Percentage (%)"><option value="Min Charge"><option value="At Cost"></datalist>
+<datalist id="dl-dest"><option value="Metro Melbourne"><option value="Metro Sydney"><option value="Metro Brisbane"><option value="Metro Perth"><option value="Metro Adelaide"><option value="Metro Hobart"><option value="Metro Darwin"><option value="Metro Canberra"><option value="Regional Victoria"><option value="Regional NSW"><option value="Regional Queensland"><option value="Regional WA"></datalist>
+
+<style>
+/* ── RESET & VARS ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #1a1a2e;
+  --navy2: #252540;
+  --olive: #7a7a2a;
+  --olive2: #9a9a3a;
+  --cream: #f5f2eb;
+  --white: #fdfaf4;
+  --gold: #c9a84c;
+  --gold2: #e8c870;
+  --border: rgba(122,122,42,0.2);
+  --red: #b03030;
+}
+
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--navy);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ── TOP BAR ── */
+#topbar {
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.2rem;
+  height: 52px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+.brand { display: flex; align-items: center; gap: 0.6rem; }
+.brand svg { width: 28px; height: 28px; flex-shrink: 0; }
+.brand-name { font-weight: 700; font-size: 1rem; color: #fff; line-height: 1; }
+.brand-sub { font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--olive2); }
+#topbar-label { font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+
+/* Desktop tab pills in topbar */
+#desk-tabs { display: none; gap: 0.4rem; }
+.desk-tab {
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: none;
+  color: rgba(255,255,255,0.5);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.desk-tab.active { background: var(--olive); border-color: var(--olive); color: #fff; }
+.desk-tab:hover:not(.active) { background: rgba(255,255,255,0.08); }
+
+/* ── MOBILE TAB BAR ── */
+#mobile-tabs {
+  display: flex;
+  background: var(--navy2);
+  border-bottom: 2px solid var(--olive);
+  flex-shrink: 0;
+}
+.mob-tab {
+  flex: 1;
+  padding: 0.75rem 0.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+.mob-tab.active { color: #fff; background: rgba(122,122,42,0.15); border-bottom-color: var(--olive2); }
+
+/* ── MAIN WORKSPACE ── */
+#workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── PANELS ── */
+.panel {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile: only one panel visible at a time */
+@media (max-width: 899px) {
+  #workspace { display: block; height: calc(100vh - 52px - 40px); overflow: hidden; }
+  .panel { display: none; width: 100%; height: 100%; overflow-y: auto; }
+  .panel.active { display: block; }
+}
+
+/* Desktop: form always left, active panel on right */
+@media (min-width: 900px) {
+  #mobile-tabs { display: none; }
+  #desk-tabs { display: flex; }
+  #workspace {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    height: calc(100vh - 52px);
+  }
+  /* Form always visible on left */
+  #panel-form {
+    display: block !important;
+    border-right: 1px solid var(--border);
+    grid-column: 1;
+  }
+  /* Preview and rates share the right column — only active one shows */
+  #panel-preview, #panel-rates {
+    grid-column: 2;
+    grid-row: 1;
+    display: none;
+  }
+  #panel-preview.active, #panel-rates.active {
+    display: block !important;
+  }
+  /* Scrollbars */
+  #panel-form::-webkit-scrollbar,
+  #panel-preview::-webkit-scrollbar,
+  #panel-rates::-webkit-scrollbar { width: 5px; }
+  #panel-form::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+  #panel-preview::-webkit-scrollbar-thumb,
+  #panel-rates::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
+}
+
+/* ── FORM PANEL ── */
+#panel-form {
+  background: var(--cream);
+  padding-bottom: 80px; /* space for mobile bottom bar */
+}
+
+.form-inner { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+/* ── ACCORDION ── */
+.acc { background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.acc-head {
+  background: var(--navy);
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.acc-head:active { background: var(--navy2); }
+.acc-ico { font-size: 1rem; flex-shrink: 0; }
+.acc-title { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #fff; flex: 1; }
+.acc-badge { font-size: 0.55rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--olive2); background: rgba(122,122,42,0.25); padding: 0.18rem 0.5rem; border-radius: 20px; font-weight: 600; }
+.acc-chevron { color: rgba(255,255,255,0.35); font-size: 0.7rem; transition: transform 0.25s; flex-shrink: 0; }
+.acc.open .acc-chevron { transform: rotate(180deg); }
+.acc-body { display: none; padding: 1rem; flex-direction: column; gap: 0.75rem; }
+.acc.open .acc-body { display: flex; }
+
+/* ── FORM FIELDS ── */
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+.field { display: flex; flex-direction: column; gap: 0.3rem; }
+.field label { font-size: 0.57rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--olive); font-weight: 700; }
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--navy);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.2s;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus { border-color: var(--olive); }
+
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a7a2a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2rem;
+}
+.field input[type=number] { -moz-appearance: textfield; }
+.field input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.hint { font-size: 0.6rem; color: rgba(122,122,42,0.7); }
+
+/* Revenue tonne pill */
+.rt-pill {
+  background: rgba(122,122,42,0.1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.rt-pill-label { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); font-weight: 700; }
+.rt-pill-val { font-size: 1.1rem; font-weight: 700; color: var(--olive); font-family: 'Playfair Display', serif; }
+
+/* ── CHARGE ROWS ── */
+.charge-col-heads {
+  display: grid;
+  grid-template-columns: 1fr 80px 70px 28px;
+  gap: 0.35rem;
+  padding: 0 0.25rem;
+  margin-bottom: 0.2rem;
+}
+.charge-col-heads span { font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(122,122,42,0.6); font-weight: 700; }
+
+.charge-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.charge-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 70px 28px;
+  gap: 0.35rem;
+  align-items: center;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.4rem;
+}
+.charge-row input {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  color: var(--navy);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.charge-row input:focus { border-color: var(--olive); }
+.charge-row input[type=number] { -moz-appearance: textfield; font-weight: 600; color: var(--olive); }
+.charge-row input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.btn-remove {
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 50%;
+  color: var(--red);
+  font-size: 0.9rem;
+  cursor: pointer;
+  opacity: 0.55;
+  flex-shrink: 0;
+}
+.btn-remove:active { opacity: 1; background: rgba(176,48,48,0.1); }
+
+.btn-add-row {
+  width: 100%;
+  padding: 0.6rem;
+  background: none;
+  border: 1.5px dashed var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--olive);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  -webkit-appearance: none;
+}
+.btn-add-row:active { background: rgba(122,122,42,0.08); }
+
+/* Note rows */
+.note-row { display: flex; gap: 0.4rem; align-items: flex-start; }
+.note-row textarea {
+  flex: 1;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem;
+  color: var(--navy);
+  resize: vertical;
+  min-height: 48px;
+  outline: none;
+  line-height: 1.5;
+}
+.note-row textarea:focus { border-color: var(--olive); }
+
+/* ── MOBILE BOTTOM BAR ── */
+#bottom-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--navy);
+  border-top: 3px solid var(--olive);
+  padding: 0.8rem 1rem;
+  padding-bottom: max(0.8rem, env(safe-area-inset-bottom));
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.bar-total { flex: 1; min-width: 0; }
+.bar-label { font-size: 0.5rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 0.1rem; }
+.bar-amount { font-family: 'Playfair Display', serif; font-size: 1.45rem; color: #fff; font-weight: 700; line-height: 1; white-space: nowrap; }
+.bar-amount .cur { font-family: 'DM Sans', sans-serif; font-size: 0.7rem; color: var(--gold2); font-weight: 600; margin-right: 0.2rem; }
+.bar-buttons { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+.btn-recalc {
+  padding: 0.7rem 1rem;
+  background: var(--olive);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-appearance: none;
+}
+.btn-recalc:active { opacity: 0.85; }
+
+.btn-preview-mob {
+  padding: 0.7rem 0.9rem;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  border-radius: 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-appearance: none;
+}
+.btn-preview-mob:active { background: rgba(255,255,255,0.2); }
+
+/* Hide bottom bar on desktop */
+@media (min-width: 900px) {
+  #bottom-bar { display: none !important; }
+  #mobile-tabs { display: none !important; }
+}
+
+/* ── PREVIEW PANEL ── */
+#panel-preview {
+  background: #e2ddd4;
+  padding: 1.2rem;
+  padding-bottom: 5rem;
+}
+@media (min-width: 900px) {
+  #panel-preview { padding: 1.5rem; }
+}
+
+/* PDF action bar */
+.pdf-bar {
+  background: var(--navy2);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 0.8rem 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+}
+.pdf-note { font-size: 0.68rem; color: rgba(255,255,255,0.4); flex: 1; }
+.pdf-note b { color: rgba(255,255,255,0.7); }
+.pdf-btns { display: flex; gap: 0.6rem; }
+.btn-edit { padding: 0.65rem 1rem; background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.15); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap; -webkit-appearance: none; }
+.btn-pdf { padding: 0.65rem 1.2rem; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: var(--navy); border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 700; cursor: pointer; white-space: nowrap; -webkit-appearance: none; }
+
+/* ── QUOTE DOCUMENT ── */
+.quote-doc {
+  background: var(--white);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.qd-header {
+  background: var(--navy);
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  position: relative;
+  overflow: hidden;
+}
+.qd-header::after { content:''; position:absolute; top:-50px; right:-50px; width:150px; height:150px; border-radius:50%; background:radial-gradient(circle,rgba(122,122,42,0.2),transparent 70%); }
+.qd-logo { display: flex; align-items: center; gap: 0.6rem; }
+.qd-logo svg { width: 30px; height: 30px; }
+.qd-logo-name { font-weight: 700; font-size: 1rem; color: #fff; line-height: 1; }
+.qd-logo-sub { font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--olive2); }
+.qd-meta { text-align: right; z-index: 1; flex-shrink: 0; }
+.qd-meta-lbl { font-size: 0.5rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--olive2); margin-bottom: 0.15rem; }
+.qd-meta-id { font-family: 'Playfair Display', serif; font-size: 0.82rem; color: #fff; }
+.qd-meta-date { font-size: 0.65rem; color: rgba(255,255,255,0.4); margin-top: 0.1rem; }
+.qd-hero { background: linear-gradient(135deg, var(--olive), var(--olive2)); padding: 1.2rem 1.5rem; }
+.qd-hero-eye { font-size: 0.55rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 0.2rem; }
+.qd-hero-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: #fff; font-weight: 700; margin-bottom: 0.7rem; line-height: 1.2; }
+.qd-stats { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.qd-stat { background: rgba(255,255,255,0.16); border-radius: 7px; padding: 0.4rem 0.65rem; text-align: center; }
+.qd-stat-v { font-family: 'Playfair Display', serif; font-size: 0.9rem; color: #fff; font-weight: 700; line-height: 1; }
+.qd-stat-l { font-size: 0.5rem; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-top: 0.1rem; }
+.qd-body { padding: 1.1rem 1.3rem; display: flex; flex-direction: column; gap: 1.1rem; }
+.qd-details { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.qd-detail { background: var(--cream); border: 1px solid var(--border); border-radius: 7px; padding: 0.65rem 0.75rem; position: relative; overflow: hidden; }
+.qd-detail::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--olive),var(--olive2)); }
+.qd-detail-lbl { font-size: 0.5rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); font-weight: 700; margin-bottom: 0.2rem; }
+.qd-detail-val { font-size: 0.78rem; font-weight: 500; color: var(--navy); line-height: 1.4; word-break: break-word; }
+.qd-sec-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.qd-sec-head h4 { font-family: 'Playfair Display', serif; font-size: 0.9rem; font-weight: 600; color: var(--navy); }
+.qd-sec-line { flex: 1; height: 1px; background: var(--border); }
+.qd-sec-tag { font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: #fff; background: var(--olive); padding: 0.15rem 0.45rem; border-radius: 20px; }
+.qd-table { background: var(--cream); border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.qd-tr { display: grid; align-items: center; padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--border); gap: 0.5rem; }
+.qd-tr:last-child { border-bottom: none; }
+.qd-tr.no-basis { grid-template-columns: 1fr auto; }
+.qd-tr.has-basis { grid-template-columns: 1fr auto auto; }
+.qd-tr.total { background: var(--navy); }
+.qd-tr-name { font-size: 0.78rem; color: var(--navy); line-height: 1.3; }
+.qd-tr.total .qd-tr-name { color: #fff; font-weight: 600; font-size: 0.8rem; }
+.qd-tr-basis { font-size: 0.62rem; color: rgba(122,122,42,0.7); background: rgba(122,122,42,0.08); padding: 0.1rem 0.4rem; border-radius: 4px; white-space: nowrap; }
+.qd-tr.total .qd-tr-basis { color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.08); }
+.qd-tr-amt { font-weight: 600; font-size: 0.82rem; color: var(--olive); text-align: right; white-space: nowrap; }
+.qd-tr.total .qd-tr-amt { color: var(--gold2); font-family: 'Playfair Display', serif; font-size: 0.88rem; }
+.qd-grand { background: linear-gradient(135deg, var(--navy), var(--navy2)); border-radius: 12px; padding: 1.2rem 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; position: relative; overflow: hidden; }
+.qd-grand::before { content:''; position:absolute; bottom:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:radial-gradient(circle,rgba(122,122,42,0.3),transparent 70%); }
+.qd-grand-left .gll { font-size: 0.54rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 0.2rem; }
+.qd-grand-left .glt { font-family: 'Playfair Display', serif; font-size: 1rem; color: #fff; font-weight: 600; }
+.qd-grand-left .gls { font-size: 0.64rem; color: rgba(255,255,255,0.32); margin-top: 0.2rem; }
+.qd-grand-right { text-align: right; z-index: 1; flex-shrink: 0; }
+.qd-grand-right .gc { font-size: 0.64rem; color: var(--gold2); letter-spacing: 0.1em; font-weight: 600; }
+.qd-grand-right .ga { font-family: 'Playfair Display', serif; font-size: 2rem; color: #fff; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.qd-notes { background: var(--cream); border: 1px solid var(--border); border-left: 4px solid var(--gold); border-radius: 8px; padding: 0.85rem 1rem; }
+.qd-notes h5 { font-size: 0.54rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--olive); font-weight: 700; margin-bottom: 0.5rem; }
+.qd-notes ul { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
+.qd-notes ul li { font-size: 0.75rem; color: #4a4a6a; padding-left: 0.9rem; position: relative; line-height: 1.5; }
+.qd-notes ul li::before { content: '—'; position: absolute; left: 0; color: var(--olive2); font-size: 0.68rem; }
+.qd-footer { background: var(--navy); padding: 0.7rem 1.3rem; display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+.qd-footer p { font-size: 0.62rem; color: rgba(255,255,255,0.28); }
+.qd-footer .vl { font-size: 0.62rem; color: var(--olive2); font-weight: 500; }
+
+/* ── PASSWORD SCREEN ── */
+#pw-screen {
+  position: fixed; inset: 0;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99999;
+  padding: 1.5rem;
+}
+.pw-box {
+  background: var(--navy2);
+  border: 1px solid rgba(122,122,42,0.3);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  width: 100%; max-width: 360px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.pw-logo { display: flex; align-items: center; justify-content: center; gap: 0.7rem; margin-bottom: 1.5rem; }
+.pw-logo svg { width: 40px; height: 40px; }
+.pw-logo-text .pn { font-weight: 700; font-size: 1.3rem; color: #fff; }
+.pw-logo-text .ps { font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--olive2); }
+.pw-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: #fff; margin-bottom: 0.4rem; }
+.pw-sub { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 1.5rem; }
+.pw-input {
+  width: 100%; padding: 0.85rem 1rem;
+  background: rgba(255,255,255,0.07);
+  border: 1.5px solid rgba(122,122,42,0.35);
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem; color: #fff;
+  outline: none; text-align: center;
+  letter-spacing: 0.2em;
+  margin-bottom: 0.85rem;
+  -webkit-appearance: none;
+}
+.pw-input:focus { border-color: var(--olive2); }
+.pw-btn {
+  width: 100%; padding: 0.85rem;
+  background: linear-gradient(135deg, var(--olive), var(--olive2));
+  color: #fff; border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; -webkit-appearance: none;
+}
+.pw-btn:active { opacity: 0.85; }
+.pw-error { color: #e07070; font-size: 0.8rem; margin-top: 0.6rem; min-height: 1.2rem; }
+
+/* ── QUOTES MANAGER ── */
+#qm-screen {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none; align-items: center; justify-content: center;
+  z-index: 9999; padding: 1.2rem;
+  backdrop-filter: blur(4px);
+}
+#qm-screen.open { display: flex; }
+.qm-box {
+  background: var(--white);
+  border-radius: 16px;
+  width: 100%; max-width: 520px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+.qm-head {
+  background: var(--navy);
+  padding: 1rem 1.2rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.qm-head h2 { font-size: 0.9rem; font-weight: 700; color: #fff; letter-spacing: 0.05em; }
+.qm-close {
+  background: rgba(255,255,255,0.1); border: none; border-radius: 8px;
+  color: #fff; font-size: 1rem; width: 32px; height: 32px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.qm-toolbar {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 0.5rem; flex-wrap: wrap;
+}
+.qm-save-name {
+  flex: 1; min-width: 160px;
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; color: var(--navy);
+  outline: none; -webkit-appearance: none;
+}
+.qm-save-name:focus { border-color: var(--olive); }
+.btn-qm-save {
+  padding: 0.55rem 1rem;
+  background: var(--olive); color: #fff;
+  border: none; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap; -webkit-appearance: none;
+}
+.btn-qm-new {
+  padding: 0.55rem 1rem;
+  background: none; color: var(--olive);
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; -webkit-appearance: none;
+}
+.qm-io-bar {
+  padding: 0.6rem 1rem;
+  background: rgba(122,122,42,0.06);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.qm-io-label { font-size: 0.7rem; color: var(--olive); font-weight: 600; flex: 1; }
+.btn-qm-export, .btn-qm-import {
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.btn-qm-export {
+  background: var(--navy);
+  color: #fff;
+  border: none;
+}
+.btn-qm-export:active { opacity: 0.85; }
+.btn-qm-import {
+  background: #fff;
+  color: var(--navy);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+}
+.btn-qm-import:active { background: var(--cream); }
+.qm-list { overflow-y: auto; flex: 1; padding: 0.5rem; }
+.qm-empty { padding: 2rem; text-align: center; color: var(--border); font-size: 0.85rem; }
+.qm-item {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 0.4rem;
+  background: var(--cream); cursor: pointer;
+  transition: background 0.15s;
+}
+.qm-item:hover { background: rgba(122,122,42,0.08); }
+.qm-item-info { flex: 1; min-width: 0; }
+.qm-item-name { font-size: 0.88rem; font-weight: 600; color: var(--navy); }
+.qm-item-meta { font-size: 0.7rem; color: var(--olive); margin-top: 0.1rem; }
+.qm-item-total { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--olive); white-space: nowrap; }
+.btn-qm-load { padding: 0.4rem 0.75rem; background: var(--navy); color: #fff; border: none; border-radius: 7px; font-size: 0.72rem; font-weight: 600; cursor: pointer; -webkit-appearance: none; }
+.btn-qm-del { padding: 0.4rem 0.6rem; background: none; color: var(--red); border: 1px solid rgba(176,48,48,0.3); border-radius: 7px; font-size: 0.72rem; cursor: pointer; -webkit-appearance: none; }
+
+/* Quotes button in topbar */
+.btn-quotes {
+  padding: 0.4rem 0.85rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px; color: rgba(255,255,255,0.7);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; -webkit-appearance: none;
+}
+.btn-quotes:hover { background: rgba(255,255,255,0.14); }
+
+/* ── RATE CARD PANEL ── */
+#panel-rates { background: var(--cream); }
+.rc-wrap { padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 6rem; max-width: 820px; }
+.rc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.3rem; }
+.rc-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--navy); margin-bottom: 0.2rem; }
+.rc-sub { font-size: 0.78rem; color: var(--olive); }
+.btn-rc-save { padding: 0.65rem 1.2rem; background: var(--olive); color: #fff; border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; -webkit-appearance: none; }
+.btn-rc-save:active { opacity: 0.85; }
+.btn-rc-reset { padding: 0.65rem 1rem; background: none; color: var(--olive); border: 1.5px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; cursor: pointer; margin-left: 0.5rem; -webkit-appearance: none; }
+
+.rc-section { background: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+.rc-sec-head { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--navy); display: flex; align-items: center; gap: 0.5rem; }
+.rc-cur { font-size: 0.58rem; background: var(--olive); color: #fff; padding: 0.15rem 0.5rem; border-radius: 20px; letter-spacing: 0.1em; }
+.rc-dest-hint { font-size: 0.72rem; color: var(--olive); background: rgba(122,122,42,0.08); border-radius: 7px; padding: 0.5rem 0.75rem; }
+
+/* Rate Card rows */
+.rc-row { display: grid; grid-template-columns: 1fr 100px 80px 28px; gap: 0.4rem; align-items: center; background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.45rem; }
+.rc-row input { width: 100%; padding: 0.48rem 0.55rem; background: #fff; border: 1.5px solid var(--border); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--navy); outline: none; -webkit-appearance: none; }
+.rc-row input:focus { border-color: var(--olive); }
+.rc-row input[type=number] { -moz-appearance: textfield; font-weight: 600; color: var(--olive); }
+.rc-row input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.rc-col-heads { display: grid; grid-template-columns: 1fr 100px 80px 28px; gap: 0.4rem; padding: 0 0.3rem; }
+.rc-col-heads span { font-size: 0.52rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(122,122,42,0.6); font-weight: 700; }
+
+/* Destination rows */
+.rc-dest-row { background: var(--cream); border: 1px solid var(--border); border-radius: 10px; padding: 0.7rem 0.7rem 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; position: relative; }
+.rc-dest-name { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
+.rc-dest-name input { flex: 1; padding: 0.5rem 0.65rem; background: var(--navy); border: none; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 700; color: #fff; outline: none; }
+.rc-dest-charges { display: grid; grid-template-columns: 1fr 90px; gap: 0.35rem; }
+.rc-dc-row { display: contents; }
+.rc-dc-label { font-size: 0.75rem; color: var(--navy); padding: 0.4rem 0.5rem; background: #fff; border-radius: 6px; border: 1px solid var(--border); display: flex; align-items: center; }
+.rc-dc-input { padding: 0.4rem 0.55rem; background: #fff; border: 1.5px solid rgba(122,122,42,0.3); border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--olive); outline: none; text-align: right; width: 100%; -webkit-appearance: none; -moz-appearance: textfield; }
+.rc-dc-input:focus { border-color: var(--olive); }
+.rc-dc-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+.btn-rc-add { width: 100%; padding: 0.55rem; background: none; border: 1.5px dashed var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.77rem; font-weight: 600; color: var(--olive); cursor: pointer; -webkit-appearance: none; }
+.btn-rc-add:active { background: rgba(122,122,42,0.08); }
+.btn-rc-del { width: 28px; height: 28px; background: none; border: none; color: var(--red); font-size: 0.9rem; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0.55; flex-shrink: 0; -webkit-appearance: none; }
+.btn-rc-del:active { opacity: 1; }
+
+.rc-misc-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+.rc-misc-row { display: grid; grid-template-columns: 1fr 140px; align-items: center; gap: 0.7rem; }
+.rc-misc-row label { font-size: 0.72rem; color: var(--navy); font-weight: 500; }
+.rc-misc-row input { padding: 0.55rem 0.7rem; background: #fff; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--olive); outline: none; text-align: right; -webkit-appearance: none; }
+.rc-misc-row input:focus { border-color: var(--olive); }
+.rc-misc-row input[type=number] { -moz-appearance: textfield; }
+.rc-misc-row input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* Dual currency row: Name | Basis | USD | AUD */
+.qd-tr.qd-tr-usd {
+  grid-template-columns: 1fr auto auto auto !important;
+}
+.qd-tr-amt.usd-col {
+  color: #9999aa;
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+.qd-tr.total .qd-tr-amt.usd-col {
+  color: rgba(255,255,255,0.45);
+  font-size: 0.78rem;
+  font-family: 'DM Sans', sans-serif;
+}
+.qd-tr-aud {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--olive);
+  text-align: right;
+  white-space: nowrap;
+}
+.qd-tr.total .qd-tr-aud {
+  color: var(--gold2);
+  font-family: 'Playfair Display', serif;
+  font-size: 0.92rem;
+}
+
+/* Mobile: stack USD grey above AUD bold in a single cell */
+@media (max-width: 520px) {
+  .qd-tr.qd-tr-usd {
+    grid-template-columns: 1fr auto auto !important;
+  }
+  /* Hide the separate USD column on mobile — fold it into the AUD cell */
+  .qd-tr-amt.usd-col { display: none !important; }
+  /* Show a stacked two-line amount cell instead */
+  .qd-tr-aud {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
+  }
+  .qd-tr-aud .aud-usd-small {
+    font-size: 0.62rem;
+    font-weight: 400;
+    color: #9999aa;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .qd-tr.total .qd-tr-aud .aud-usd-small {
+    color: rgba(255,255,255,0.4);
+  }
+}
+
+/* Sign-off block */
+.qd-signoff {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.qd-signoff-bar {
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--olive), var(--olive2));
+  align-self: stretch;
+  flex-shrink: 0;
+  min-height: 60px;
+}
+.qd-signoff-text { display: flex; flex-direction: column; gap: 0.15rem; }
+.qd-signoff-composed { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); font-weight: 600; margin-bottom: 0.3rem; }
+.qd-signoff-name { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--navy); line-height: 1.2; }
+.qd-signoff-role { font-size: 0.78rem; font-weight: 600; color: var(--olive); }
+.qd-signoff-company { font-size: 0.78rem; color: var(--navy); }
+.qd-signoff-contact { font-size: 0.72rem; color: #666; margin-top: 0.2rem; }
+.qd-signoff-contact a { color: var(--olive); text-decoration: none; }
+
+/* ── PRINT ── */
+@media print {
+  #topbar, #mobile-tabs, #bottom-bar, .pdf-bar, #panel-form { display: none !important; }
+  body, html { height: auto; }
+  #workspace { display: block !important; height: auto !important; }
+  #panel-preview { display: block !important; height: auto !important; overflow: visible !important; padding: 0 !important; background: #fff !important; }
+  .quote-doc { border-radius: 0 !important; box-shadow: none !important; max-width: 100% !important; }
+  @page { margin: 0.5cm; size: A4; }
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD SCREEN -->
+<div id="pw-screen">
+  <div class="pw-box">
+    <div class="pw-logo">
+      <svg viewBox="0 0 42 42" fill="none">
+        <path d="M21 38C21 38 9 27 9 17C9 8 16 3 21 5C26 3 33 8 33 17C33 27 21 38 21 38Z" stroke="#7a7a2a" stroke-width="1.8" fill="none"/>
+        <path d="M21 5L21 38" stroke="#9a9a3a" stroke-width="1.3"/>
+        <path d="M21 38C21 38 12 24 14 13" stroke="#9a9a3a" stroke-width="1.3" fill="none"/>
+        <path d="M21 38C21 38 30 24 28 13" stroke="#9a9a3a" stroke-width="1.3" fill="none"/>
+      </svg>
+      <div class="pw-logo-text">
+        <div class="pn">wallace</div>
+        <div class="ps">International</div>
+      </div>
+    </div>
+    <div class="pw-title">Quote Builder</div>
+    <div class="pw-sub">Enter your access password to continue</div>
+    <input class="pw-input" type="password" id="pw-input" placeholder="••••••••">
+    <button class="pw-btn" onclick="checkPW()">Unlock →</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- QUOTES MANAGER -->
+<div id="qm-screen">
+  <div class="qm-box">
+    <div class="qm-head">
+      <h2>📁 Saved Quotes</h2>
+      <button class="qm-close" onclick="closeQM()">✕</button>
+    </div>
+    <div class="qm-toolbar">
+      <input class="qm-save-name" type="text" id="qm-name" placeholder="Quote name (e.g. Med Global — May 2026)">
+      <button class="btn-qm-save" onclick="saveQuote()">💾 Save</button>
+      <button class="btn-qm-new" onclick="newQuote()">＋ New</button>
+    </div>
+    <div class="qm-io-bar">
+      <span class="qm-io-label">Backup your quotes:</span>
+      <button class="btn-qm-export" onclick="exportQuotes()">📤 Export All</button>
+      <button class="btn-qm-export" onclick="showImportPaste()" style="background:#fff;color:#1a1a2e;border:1.5px solid rgba(122,122,42,0.2);">📥 Import</button>
+    </div>
+    <div class="qm-list" id="qm-list"></div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 42 42" fill="none">
+      <path d="M21 38C21 38 9 27 9 17C9 8 16 3 21 5C26 3 33 8 33 17C33 27 21 38 21 38Z" stroke="#7a7a2a" stroke-width="1.8" fill="none"/>
+      <path d="M21 5L21 38" stroke="#9a9a3a" stroke-width="1.3"/>
+      <path d="M21 38C21 38 12 24 14 13" stroke="#9a9a3a" stroke-width="1.3" fill="none"/>
+      <path d="M21 38C21 38 30 24 28 13" stroke="#9a9a3a" stroke-width="1.3" fill="none"/>
+    </svg>
+    <div>
+      <div class="brand-name">wallace</div>
+      <div class="brand-sub">International</div>
+    </div>
+  </div>
+  <div id="topbar-label">Quote Builder</div>
+  <!-- Desktop tabs live here -->
+  <div id="desk-tabs">
+    <button class="desk-tab active" id="dtab-form" onclick="showPanel('form')">✏️ Build Quote</button>
+    <button class="desk-tab" id="dtab-preview" onclick="showPanel('preview')">👁 Preview</button>
+    <button class="desk-tab" id="dtab-rates" onclick="showPanel('rates')">⚙️ Rate Card</button>
+    <button class="btn-quotes" onclick="openQM()">📁 Quotes</button>
+    <button class="desk-tab" onclick="savePDF()" style="background:linear-gradient(135deg,#c9a84c,#e8c870);color:#1a1a2e;border-color:transparent;">⬇ Save PDF</button>
+  </div>
+</div>
+
+<!-- MOBILE TABS -->
+<div id="mobile-tabs">
+  <button class="mob-tab active" id="mtab-form" onclick="showPanel('form')">✏️ Build</button>
+  <button class="mob-tab" id="mtab-preview" onclick="showPanel('preview')">👁 Preview</button>
+  <button class="mob-tab" id="mtab-rates" onclick="showPanel('rates')">⚙️ Rates</button>
+</div>
+
+<!-- WORKSPACE -->
+<div id="workspace">
+
+  <!-- FORM PANEL -->
+  <div class="panel active" id="panel-form">
+  <div class="form-inner">
+
+    <!-- CLIENT -->
+    <div class="acc open" id="a1">
+      <div class="acc-head" onclick="tog('a1')">
+        <span class="acc-ico">👤</span><span class="acc-title">Client Details</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="row2">
+          <div class="field"><label>Company / Client</label><input type="text" id="f-cn" value="Med Global"></div>
+          <div class="field"><label>Contact Person</label><input type="text" id="f-cp" value="Liz"></div>
+        </div>
+        <div class="field"><label>Street Address</label><input type="text" id="f-a1" value="123 Business Road"></div>
+        <div class="row2">
+          <div class="field"><label>City / Suburb</label><input type="text" id="f-cy" value="Melbourne"></div>
+          <div class="field"><label>State &amp; Postcode</label><input type="text" id="f-st" value="VIC 3000"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Email</label><input type="email" id="f-em" value="liz@medglobal.com.au"></div>
+          <div class="field"><label>Phone</label><input type="tel" id="f-ph" value="+61 3 9000 0000"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHIPMENT -->
+    <div class="acc open" id="a2">
+      <div class="acc-head" onclick="tog('a2')">
+        <span class="acc-ico">📦</span><span class="acc-title">Shipment Details</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="row2">
+          <div class="field"><label>Shipper</label><input type="text" id="f-sh" value="Qingdao Reliance"></div>
+          <div class="field"><label>Co-Loader</label><input type="text" id="f-co" value="GCS"></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label>CBM</label><input type="number" id="f-cbm" value="1.6" step="0.1"></div>
+          <div class="field"><label>KGS</label><input type="number" id="f-kgs" value="302"></div>
+          <div class="field"><label>Cartons</label><input type="number" id="f-car" value="25"></div>
+        </div>
+        <div class="rt-pill">
+          <span class="rt-pill-label">Revenue Tonne (W/M) — higher of CBM or KGS÷1000</span>
+          <span class="rt-pill-val" id="rt-display">1.600</span>
+        </div>
+        <div class="hint">💡 Per CBM / Tonne charges auto-update when CBM or KGS changes</div>
+        <div class="row2">
+          <div class="field">
+            <label>Freight Type</label>
+            <select id="f-ft">
+              <option value="LCL">LCL</option>
+              <option value="FCL 20'">FCL 20'</option>
+              <option value="FCL 40'">FCL 40'</option>
+              <option value="FCL 40' HC">FCL 40' HC</option>
+              <option value="Air Freight">Air Freight</option>
+              <option value="Air Express">Air Express</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Incoterms</label>
+            <select id="f-ic">
+              <option value="FOB">FOB</option>
+              <option value="CIF">CIF</option>
+              <option value="EXW">EXW</option>
+              <option value="DDP">DDP</option>
+              <option value="DAP">DAP</option>
+              <option value="CPT">CPT</option>
+              <option value="FCA">FCA</option>
+              <option value="CFR">CFR</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>Delivery Destination</label>
+          <select id="f-dest" onchange="onDestinationChange()">
+            <option value="">— Select Destination —</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Quote Date</label><input type="date" id="f-date"></div>
+          <div class="field"><label>Validity (Days)</label><input type="number" id="f-vd" value="60"></div>
+        </div>
+        <div class="field"><label>Exchange Rate (1 USD = AUD)</label><input type="number" id="f-ex" value="0.6556" step="0.0001"></div>
+      </div>
+    </div>
+
+    <!-- INTERNATIONAL FREIGHT -->
+    <div class="acc open" id="a3">
+      <div class="acc-head" onclick="tog('a3')">
+        <span class="acc-ico">🌏</span><span class="acc-title">International Freight</span><span class="acc-badge">USD</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="charge-col-heads"><span>Charge Name</span><span>Basis</span><span>USD Amt</span><span></span></div>
+        <div class="charge-list" id="cl-intl"></div>
+        <button class="btn-add-row" onclick="addCharge('cl-intl','dl-intl')">＋ Add Charge</button>
+      </div>
+    </div>
+
+    <!-- LOCAL PORT -->
+    <div class="acc open" id="a4">
+      <div class="acc-head" onclick="tog('a4')">
+        <span class="acc-ico">⚓</span><span class="acc-title">Local Port Charges</span><span class="acc-badge">AUD</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="charge-col-heads"><span>Charge Name</span><span>Basis</span><span>AUD Amt</span><span></span></div>
+        <div class="charge-list" id="cl-local"></div>
+        <button class="btn-add-row" onclick="addCharge('cl-local','dl-local')">＋ Add Charge</button>
+      </div>
+    </div>
+
+    <!-- CUSTOMS -->
+    <div class="acc open" id="a5">
+      <div class="acc-head" onclick="tog('a5')">
+        <span class="acc-ico">🛃</span><span class="acc-title">Customs Clearance</span><span class="acc-badge">AUD</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="charge-col-heads"><span>Charge Name</span><span>Basis</span><span>AUD Amt</span><span></span></div>
+        <div class="charge-list" id="cl-cust"></div>
+        <button class="btn-add-row" onclick="addCharge('cl-cust','dl-cust')">＋ Add Charge</button>
+      </div>
+    </div>
+
+    <!-- DELIVERY -->
+    <div class="acc open" id="a6">
+      <div class="acc-head" onclick="tog('a6')">
+        <span class="acc-ico">🚚</span><span class="acc-title">Delivery Charges</span><span class="acc-badge">AUD</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div class="charge-col-heads"><span>Charge Name</span><span>Basis</span><span>AUD Amt</span><span></span></div>
+        <div class="charge-list" id="cl-del"></div>
+        <button class="btn-add-row" onclick="addCharge('cl-del','dl-del')">＋ Add Charge</button>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="acc open" id="a7">
+      <div class="acc-head" onclick="tog('a7')">
+        <span class="acc-ico">📋</span><span class="acc-title">Notes / Terms</span><span class="acc-chevron">▼</span>
+      </div>
+      <div class="acc-body">
+        <div id="notes-list" style="display:flex;flex-direction:column;gap:0.4rem;"></div>
+        <button class="btn-add-row" onclick="addNote()">＋ Add Note</button>
+      </div>
+    </div>
+
+  </div>
+  </div><!-- /panel-form -->
+
+  <!-- PREVIEW PANEL -->
+  <div class="panel" id="panel-preview">
+
+    <div class="pdf-bar">
+      <div class="pdf-btns">
+        <button class="btn-edit" onclick="showPanel('form')">← Edit</button>
+        <button class="btn-pdf" onclick="savePDF()">⬇ Save as PDF</button>
+      </div>
+      <div class="pdf-note"><b>Tip:</b> In print dialog choose "Save as PDF", set margins to None.</div>
+    </div>
+
+    <div class="quote-doc" id="quote-doc">
+      <div class="qd-header">
+        <div class="qd-logo">
+          <svg viewBox="0 0 42 42" fill="none" width="30" height="30">
+            <path d="M21 38C21 38 9 27 9 17C9 8 16 3 21 5C26 3 33 8 33 17C33 27 21 38 21 38Z" stroke="#7a7a2a" stroke-width="1.8" fill="none"/>
+            <path d="M21 5L21 38" stroke="#9a9a3a" stroke-width="1.3"/>
+            <path d="M21 38C21 38 12 24 14 13" stroke="#9a9a3a" stroke-width="1.3" fill="none"/>
+            <path d="M21 38C21 38 30 24 28 13" stroke="#9a9a3a" stroke-width="1.3" fill="none"/>
+          </svg>
+          <div><div class="qd-logo-name">wallace</div><div class="qd-logo-sub">International</div></div>
+        </div>
+        <div class="qd-meta">
+          <div class="qd-meta-lbl">Freight Quotation</div>
+          <div class="qd-meta-id" id="p-fi">LCL · FOB · —</div>
+          <div class="qd-meta-date" id="p-date">Issued: —</div>
+        </div>
+      </div>
+      <div class="qd-hero">
+        <div class="qd-hero-eye">Client Quotation</div>
+        <div class="qd-hero-title" id="p-title">—</div>
+        <div class="qd-stats">
+          <div class="qd-stat"><div class="qd-stat-v" id="p-cbm">—</div><div class="qd-stat-l">CBM</div></div>
+          <div class="qd-stat"><div class="qd-stat-v" id="p-kgs">—</div><div class="qd-stat-l">KGS</div></div>
+          <div class="qd-stat"><div class="qd-stat-v" id="p-car">—</div><div class="qd-stat-l">Cartons</div></div>
+          <div class="qd-stat"><div class="qd-stat-v" id="p-ft">—</div><div class="qd-stat-l">Shipment</div></div>
+        </div>
+      </div>
+      <div class="qd-body">
+        <div class="qd-details" id="p-details"></div>
+        <div id="p-sections"></div>
+        <div class="qd-grand">
+          <div class="qd-grand-left">
+            <div class="gll">Approximate Total Cost</div>
+            <div class="glt">All-in Shipment Estimate</div>
+            <div class="gls" id="p-sub">—</div>
+          </div>
+          <div class="qd-grand-right">
+            <div class="gc">AUD</div>
+            <div class="ga" id="p-grand">—</div>
+          </div>
+        </div>
+        <div class="qd-notes" id="p-notes" style="display:none">
+          <h5>Important Notes</h5>
+          <ul id="p-notes-list"></ul>
+        </div>
+
+        <!-- SIGN-OFF -->
+        <div class="qd-signoff" id="p-signoff" style="display:none">
+          <div class="qd-signoff-bar"></div>
+          <div class="qd-signoff-text">
+            <div class="qd-signoff-composed">This quote composed by</div>
+            <div class="qd-signoff-name" id="p-so-name"></div>
+            <div class="qd-signoff-role" id="p-so-title"></div>
+            <div class="qd-signoff-company" id="p-so-company"></div>
+            <div class="qd-signoff-contact" id="p-so-contact"></div>
+          </div>
+        </div>
+      </div>
+      <div class="qd-footer">
+        <p>© 2026 Wallace International · All Rights Reserved</p>
+        <span class="vl" id="p-validity">—</span>
+      </div>
+    </div>
+
+  </div><!-- /panel-preview -->
+
+  <!-- RATE CARD PANEL -->
+  <div class="panel" id="panel-rates">
+  <div class="rc-wrap">
+
+    <div class="rc-header">
+      <div>
+        <div class="rc-title">⚙️ Rate Card</div>
+        <div class="rc-sub">Set default rates by section and destination. These auto-populate when building a new quote.</div>
+      </div>
+      <button class="btn-rc-save" onclick="saveRateCard()">💾 Save Rate Card</button>
+    </div>
+
+    <!-- INTERNATIONAL FREIGHT RATES -->
+    <div class="rc-section">
+      <div class="rc-sec-head">🌏 International Freight <span class="rc-cur">USD</span></div>
+      <div class="rc-grid" id="rc-intl"></div>
+      <button class="btn-rc-add" onclick="addRCRow('rc-intl')">＋ Add Row</button>
+    </div>
+
+    <!-- LOCAL PORT RATES -->
+    <div class="rc-section">
+      <div class="rc-sec-head">⚓ Local Port Charges <span class="rc-cur">AUD</span></div>
+      <div class="rc-grid" id="rc-local"></div>
+      <button class="btn-rc-add" onclick="addRCRow('rc-local')">＋ Add Row</button>
+    </div>
+
+    <!-- CUSTOMS RATES -->
+    <div class="rc-section">
+      <div class="rc-sec-head">🛃 Customs Clearance <span class="rc-cur">AUD</span></div>
+      <div class="rc-grid" id="rc-cust"></div>
+      <button class="btn-rc-add" onclick="addRCRow('rc-cust')">＋ Add Row</button>
+    </div>
+
+    <!-- DELIVERY RATES BY DESTINATION -->
+    <div class="rc-section">
+      <div class="rc-sec-head">🚚 Delivery Charges by Destination <span class="rc-cur">AUD</span></div>
+      <div class="rc-dest-hint">💡 When a destination is selected in the quote, delivery charges auto-populate from this table.</div>
+      <div class="rc-dest-grid" id="rc-dest"></div>
+      <button class="btn-rc-add" onclick="addRCDestRow()">＋ Add Destination</button>
+    </div>
+
+    <!-- PREPARED BY -->
+    <div class="rc-section">
+      <div class="rc-sec-head">👤 Prepared By — Quote Sign-off</div>
+      <div class="rc-misc-grid">
+        <div class="rc-misc-row">
+          <label>Full Name</label>
+          <input type="text" id="rc-name" value="Trent Logan">
+        </div>
+        <div class="rc-misc-row">
+          <label>Title / Position</label>
+          <input type="text" id="rc-title" value="National Sales Manager">
+        </div>
+        <div class="rc-misc-row">
+          <label>Company</label>
+          <input type="text" id="rc-company" value="Wallace International Pty Ltd">
+        </div>
+        <div class="rc-misc-row">
+          <label>Phone</label>
+          <input type="text" id="rc-phone" value="+61 408 970 692">
+        </div>
+        <div class="rc-misc-row">
+          <label>Website</label>
+          <input type="text" id="rc-web" value="www.wallaceintl.com.au">
+        </div>
+        <div class="rc-misc-row">
+          <label>Email</label>
+          <input type="text" id="rc-remail" value="">
+        </div>
+      </div>
+    </div>
+
+    <!-- EXCHANGE RATE & MISC -->
+    <div class="rc-section">
+      <div class="rc-sec-head">💱 Default Rates &amp; Settings</div>
+      <div class="rc-misc-grid">
+        <div class="rc-misc-row">
+          <label>Default Exchange Rate (1 USD = AUD)</label>
+          <input type="number" id="rc-exrate" value="0.6556" step="0.0001">
+        </div>
+        <div class="rc-misc-row">
+          <label>Default Quote Validity (Days)</label>
+          <input type="number" id="rc-validity" value="60">
+        </div>
+        <div class="rc-misc-row">
+          <label>Default Co-Loader</label>
+          <input type="text" id="rc-coloader" value="GCS">
+        </div>
+        <div class="rc-misc-row">
+          <label>Fuel Surcharge %</label>
+          <input type="number" id="rc-fuel" value="25" step="1">
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:1rem 0 0.5rem; text-align:center;">
+      <button class="btn-rc-save" onclick="saveRateCard()">💾 Save Rate Card</button>
+      <button class="btn-rc-reset" onclick="resetRateCard()">↺ Reset to Defaults</button>
+    </div>
+
+  </div>
+  </div><!-- /panel-rates -->
+
+</div><!-- /workspace -->
+
+<!-- MOBILE BOTTOM BAR — outside workspace, at body level -->
+<div id="bottom-bar">
+  <div class="bar-total">
+    <div class="bar-label">Estimated Total (AUD)</div>
+    <div class="bar-amount"><span class="cur">AUD </span><span id="live-total">0.00</span></div>
+  </div>
+  <div class="bar-buttons">
+    <button class="btn-recalc" onclick="recalc()">↻ Recalc</button>
+    <button class="btn-preview-mob" onclick="openQM()">📁</button>
+    <button class="btn-preview-mob" onclick="showPanel('preview')">👁 Preview</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// PASSWORD — simple & reliable on all browsers
+// To change password: update the value below
+// Current password: wallace2026
+// ═══════════════════════════════════════
+var SESSION_KEY = 'wiq_auth';
+
+// Password is split so it's not immediately obvious as plain text
+var _p = ['wal','lace','2026'].join('');
+
+function checkPW() {
+  var entered = document.getElementById('pw-input').value;
+  if (entered === _p) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('pw-screen').style.display = 'none';
+    document.getElementById('pw-error').textContent = '';
+  } else {
+    document.getElementById('pw-error').textContent = 'Incorrect password. Please try again.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+function initAuth() {
+  if (sessionStorage.getItem(SESSION_KEY) === '1') {
+    document.getElementById('pw-screen').style.display = 'none';
+  } else {
+    document.getElementById('pw-screen').style.display = 'flex';
+    setTimeout(function() {
+      var el = document.getElementById('pw-input');
+      if (el) el.focus();
+    }, 300);
+  }
+}
+
+// ═══════════════════════════════════════
+// SAVE / LOAD QUOTES
+// ═══════════════════════════════════════
+var STORAGE_KEY = 'wiq_quotes';
+
+function getQuotes() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch(e) { return []; }
+}
+
+function setQuotes(q) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(q));
+}
+
+function captureFormData() {
+  // Capture all text/select fields
+  var fields = {};
+  ['f-cn','f-cp','f-a1','f-cy','f-st','f-em','f-ph',
+   'f-sh','f-co','f-cbm','f-kgs','f-car','f-ft','f-ic',
+   'f-dest','f-date','f-vd','f-ex'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) fields[id] = el.value;
+  });
+
+  // Capture charge rows
+  function captureList(listId) {
+    var rows = [];
+    document.querySelectorAll('#' + listId + ' .charge-row').forEach(function(row) {
+      var ins = row.querySelectorAll('input');
+      rows.push({
+        n: ins[0] ? ins[0].value : '',
+        b: ins[1] ? ins[1].value : '',
+        a: ins[2] ? ins[2].value : '',
+        r: row.dataset.rate || ''
+      });
+    });
+    return rows;
+  }
+
+  // Capture notes
+  var notes = [];
+  document.querySelectorAll('#notes-list textarea').forEach(function(t) {
+    notes.push(t.value);
+  });
+
+  return {
+    fields: fields,
+    intl:   captureList('cl-intl'),
+    local:  captureList('cl-local'),
+    cust:   captureList('cl-cust'),
+    del:    captureList('cl-del'),
+    notes:  notes
+  };
+}
+
+function restoreFormData(data) {
+  if (!data) return;
+
+  // Restore fields
+  Object.keys(data.fields || {}).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = data.fields[id];
+  });
+
+  // Restore charge lists
+  function restoreList(listId, dlId, rows) {
+    document.getElementById(listId).innerHTML = '';
+    (rows || []).forEach(function(r) {
+      addCharge(listId, dlId, r.n, r.b, parseFloat(r.a) || 0);
+      // Restore stored rate
+      var allRows = document.querySelectorAll('#' + listId + ' .charge-row');
+      var lastRow = allRows[allRows.length - 1];
+      if (lastRow && r.r) lastRow.dataset.rate = r.r;
+    });
+  }
+
+  restoreList('cl-intl',  'dl-intl',  data.intl);
+  restoreList('cl-local', 'dl-local', data.local);
+  restoreList('cl-cust',  'dl-cust',  data.cust);
+  restoreList('cl-del',   'dl-del',   data.del);
+
+  // Restore notes
+  document.getElementById('notes-list').innerHTML = '';
+  (data.notes || []).forEach(function(n) { addNote(n); });
+
+  recalc();
+}
+
+function saveQuote() {
+  var name = document.getElementById('qm-name').value.trim();
+  if (!name) {
+    // Auto-generate name from client
+    var cn = document.getElementById('f-cn').value || 'Quote';
+    var dt = new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    name = cn + ' — ' + dt;
+    document.getElementById('qm-name').value = name;
+  }
+
+  var ex   = parseFloat(document.getElementById('f-ex').value) || 0.6556;
+  var iUSD = sumList('cl-intl');
+  var grand = (iUSD/ex) + sumList('cl-local') + sumList('cl-cust') + sumList('cl-del');
+
+  var quotes = getQuotes();
+  var id = Date.now().toString();
+  quotes.unshift({
+    id: id,
+    name: name,
+    total: grand.toFixed(2),
+    client: document.getElementById('f-cn').value || '',
+    date: new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}),
+    data: captureFormData()
+  });
+  setQuotes(quotes);
+  renderQMList();
+  document.getElementById('qm-name').value = '';
+
+  // Flash confirmation
+  var btn = document.querySelector('.btn-qm-save');
+  var orig = btn.textContent;
+  btn.textContent = '✓ Saved!';
+  setTimeout(function() { btn.textContent = orig; }, 1500);
+}
+
+function loadQuote(id) {
+  var quotes = getQuotes();
+  var q = null;
+  for (var i = 0; i < quotes.length; i++) {
+    if (quotes[i].id === id) { q = quotes[i]; break; }
+  }
+  if (q) {
+    restoreFormData(q.data);
+    document.getElementById('qm-name').value = q.name;
+    closeQM();
+    showPanel('form');
+  }
+}
+
+function deleteQuote(id) {
+  var quotes = getQuotes().filter(function(x) { return x.id !== id; });
+  setQuotes(quotes);
+  renderQMList();
+}
+
+function newQuote() {
+  if (!confirm('Start a new blank quote? Current unsaved data will be lost.')) return;
+
+  // Clear client fields
+  var clientFields = ['f-cn','f-cp','f-a1','f-cy','f-st','f-em','f-ph','f-sh'];
+  for (var i = 0; i < clientFields.length; i++) {
+    var el = document.getElementById(clientFields[i]);
+    if (el) el.value = '';
+  }
+
+  // Reset shipment fields to defaults
+  document.getElementById('f-co').value   = '';
+  document.getElementById('f-cbm').value  = '1.6';
+  document.getElementById('f-kgs').value  = '302';
+  document.getElementById('f-car').value  = '25';
+  document.getElementById('f-ft').value   = 'LCL';
+  document.getElementById('f-ic').value   = 'FOB';
+  document.getElementById('f-dest').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('f-vd').value   = '60';
+  document.getElementById('f-ex').value   = '0.6556';
+  document.getElementById('qm-name').value = '';
+
+  // Clear all charge lists
+  var lists = ['cl-intl','cl-local','cl-cust','cl-del'];
+  for (var j = 0; j < lists.length; j++) {
+    document.getElementById(lists[j]).innerHTML = '';
+  }
+  document.getElementById('notes-list').innerHTML = '';
+
+  // Re-apply from rate card
+  var rc = getRateCard();
+  applyRateCardToForm(rc);
+  DEFAULTS.notes.forEach(function(n) { addNote(n); });
+
+  recalc();
+  closeQM();
+  showPanel('form');
+}
+
+function renderQMList() {
+  var quotes = getQuotes();
+  var list = document.getElementById('qm-list');
+  if (!quotes.length) {
+    list.innerHTML = '<div class="qm-empty">No saved quotes yet.<br>Fill in a quote and tap 💾 Save.</div>';
+    return;
+  }
+  list.innerHTML = quotes.map(function(q) {
+    return '<div class="qm-item">' +
+      '<div class="qm-item-info">' +
+        '<div class="qm-item-name">' + q.name + '</div>' +
+        '<div class="qm-item-meta">' + q.client + ' · ' + q.date + '</div>' +
+      '</div>' +
+      '<div class="qm-item-total">AUD ' + q.total + '</div>' +
+      '<button class="btn-qm-load" onclick="loadQuote(\'' + q.id + '\')">Load</button>' +
+      '<button class="btn-qm-del"  onclick="deleteQuote(\'' + q.id + '\')">🗑</button>' +
+    '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// EXPORT / IMPORT QUOTES
+// ═══════════════════════════════════════
+function exportQuotes() {
+  var quotes = getQuotes();
+  if (!quotes.length) {
+    alert('No saved quotes to export yet. Save a quote first.');
+    return;
+  }
+  var data = {
+    exported: new Date().toISOString(),
+    app: 'Wallace International Quote Builder',
+    quotes: quotes
+  };
+  var json = JSON.stringify(data);
+
+  // Show export modal with the data as copyable text
+  document.getElementById('export-modal').style.display = 'flex';
+  var ta = document.getElementById('export-text');
+  ta.value = json;
+  ta.select();
+}
+
+function copyExportText() {
+  var ta = document.getElementById('export-text');
+  ta.select();
+  try {
+    document.execCommand('copy');
+    var btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ Copied!';
+    btn.style.background = '#4a7a4a';
+    setTimeout(function() {
+      btn.textContent = '📋 Copy All';
+      btn.style.background = '';
+    }, 2000);
+  } catch(e) {
+    alert('Please manually select all the text and copy it.');
+  }
+}
+
+function closeExportModal() {
+  document.getElementById('export-modal').style.display = 'none';
+}
+
+function showImportPaste() {
+  document.getElementById('import-modal').style.display = 'flex';
+  document.getElementById('import-text').value = '';
+  document.getElementById('import-text').focus();
+}
+
+function closeImportModal() {
+  document.getElementById('import-modal').style.display = 'none';
+}
+
+function doImport() {
+  var text = document.getElementById('import-text').value.trim();
+  if (!text) { alert('Please paste your backup text first.'); return; }
+  try {
+    var data = JSON.parse(text);
+    var incoming = data.quotes || (Array.isArray(data) ? data : null);
+    if (!incoming || !incoming.length) {
+      alert('No quotes found. Make sure you paste the full backup text.');
+      return;
+    }
+    var existing = getQuotes();
+    var existingIds = existing.map(function(q) { return q.id; });
+    var newOnes = incoming.filter(function(q) { return existingIds.indexOf(q.id) === -1; });
+    var merged = newOnes.concat(existing);
+    setQuotes(merged);
+    renderQMList();
+    closeImportModal();
+    alert(newOnes.length + ' quote(s) imported successfully!');
+  } catch(e) {
+    alert('Could not read backup. Make sure you paste the complete unedited backup text.');
+  }
+}
+
+function openQM() {
+  renderQMList();
+  // Pre-fill name from current client
+  var cn = document.getElementById('f-cn').value;
+  if (cn && !document.getElementById('qm-name').value) {
+    var dt = new Date().toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('qm-name').value = cn + ' — ' + dt;
+  }
+  document.getElementById('qm-screen').classList.add('open');
+}
+
+function closeQM() {
+  document.getElementById('qm-screen').classList.remove('open');
+}
+
+// Close QM on backdrop click
+document.getElementById('qm-screen').addEventListener('click', function(e) {
+  if (e.target === this) closeQM();
+});
+
+// ═══════════════════════════════════════
+// RATE CARD — defaults & storage
+// ═══════════════════════════════════════
+var RC_KEY = 'wiq_ratecard';
+
+var RC_DEFAULTS = {
+  intl: [
+    {n:"Int'l Freight / Low Sulphur", b:"Per CBM / Tonne", r:72.00},
+    {n:"GRI & LSS",                   b:"Per CBM / Tonne", r:0.00},
+    {n:"Documentation Fee",           b:"Per Shipment",    r:55.00}
+  ],
+  local: [
+    {n:"Port Service Charge",                  b:"Per CBM / Tonne", r:152.00},
+    {n:"Terminal Handling Charge (THC)",        b:"Per CBM / Tonne", r:28.80},
+    {n:"Delivery Order Fee",                   b:"Flat",            r:120.00},
+    {n:"Sea Cargo Automation",                 b:"Flat",            r:38.00},
+    {n:"Destination Infrastructure Surcharge", b:"Per CBM / Tonne", r:44.80}
+  ],
+  cust: [
+    {n:"Professional Service Fee",   b:"Flat", r:95.00},
+    {n:"Postage & Petties",          b:"Flat", r:15.00},
+    {n:"Status Confirmation CMR",    b:"Flat", r:30.00},
+    {n:"Quarantine PAC Declaration", b:"Flat", r:35.00},
+    {n:"Customs Communication Fee",  b:"Flat", r:21.00}
+  ],
+  destinations: [
+    {name:"Metro Melbourne", cartage:125.00, fuel_pct:25, booking:25.00, tolls:25.00},
+    {name:"Metro Sydney",    cartage:145.00, fuel_pct:25, booking:25.00, tolls:30.00},
+    {name:"Metro Brisbane",  cartage:155.00, fuel_pct:25, booking:25.00, tolls:25.00},
+    {name:"Metro Perth",     cartage:210.00, fuel_pct:25, booking:25.00, tolls:20.00},
+    {name:"Metro Adelaide",  cartage:165.00, fuel_pct:25, booking:25.00, tolls:20.00},
+    {name:"Regional Victoria", cartage:195.00, fuel_pct:25, booking:25.00, tolls:30.00},
+    {name:"Regional NSW",    cartage:220.00, fuel_pct:25, booking:25.00, tolls:35.00}
+  ],
+  exrate:   0.6556,
+  validity: 60,
+  coloader: "GCS",
+  fuel_pct: 25
+};
+
+function getRateCard() {
+  try {
+    var stored = JSON.parse(localStorage.getItem(RC_KEY));
+    return stored || JSON.parse(JSON.stringify(RC_DEFAULTS));
+  } catch(e) { return JSON.parse(JSON.stringify(RC_DEFAULTS)); }
+}
+
+function saveRateCard() {
+  var rc = captureRateCard();
+  localStorage.setItem(RC_KEY, JSON.stringify(rc));
+  // Refresh destination dropdown in quote form
+  populateDestDropdown(rc);
+  // Flash confirmation
+  document.querySelectorAll('.btn-rc-save').forEach(function(b) {
+    var orig = b.textContent;
+    b.textContent = '✓ Saved!';
+    b.style.background = '#4a7a4a';
+    setTimeout(function() { b.textContent = orig; b.style.background = ''; }, 1500);
+  });
+}
+
+function captureRateCard() {
+  var rc = {};
+
+  function captureSection(gridId) {
+    var rows = [];
+    document.querySelectorAll('#' + gridId + ' .rc-row').forEach(function(row) {
+      var ins = row.querySelectorAll('input');
+      rows.push({ n: ins[0].value, b: ins[1].value, r: parseFloat(ins[2].value) || 0 });
+    });
+    return rows;
+  }
+
+  rc.intl  = captureSection('rc-intl');
+  rc.local = captureSection('rc-local');
+  rc.cust  = captureSection('rc-cust');
+
+  rc.destinations = [];
+  document.querySelectorAll('#rc-dest .rc-dest-row').forEach(function(row) {
+    var nameIn = row.querySelector('.rc-dest-name input');
+    var amts   = row.querySelectorAll('.rc-dc-input');
+    rc.destinations.push({
+      name:     nameIn ? nameIn.value : '',
+      cartage:  parseFloat(amts[0] ? amts[0].value : 0) || 0,
+      fuel_pct: parseFloat(amts[1] ? amts[1].value : 25) || 25,
+      booking:  parseFloat(amts[2] ? amts[2].value : 0) || 0,
+      tolls:    parseFloat(amts[3] ? amts[3].value : 0) || 0
+    });
+  });
+
+  rc.exrate   = parseFloat(document.getElementById('rc-exrate').value)   || 0.6556;
+  rc.validity = parseFloat(document.getElementById('rc-validity').value) || 60;
+  rc.coloader = document.getElementById('rc-coloader').value || 'GCS';
+  rc.fuel_pct = parseFloat(document.getElementById('rc-fuel').value)     || 25;
+  rc.signoff  = {
+    name:    document.getElementById('rc-name').value,
+    title:   document.getElementById('rc-title').value,
+    company: document.getElementById('rc-company').value,
+    phone:   document.getElementById('rc-phone').value,
+    web:     document.getElementById('rc-web').value,
+    email:   document.getElementById('rc-remail').value
+  };
+  return rc;
+}
+
+function renderRateCard(rc) {
+  // Clear grids
+  ['rc-intl','rc-local','rc-cust','rc-dest'].forEach(function(id) {
+    document.getElementById(id).innerHTML = '';
+  });
+
+  function renderGrid(gridId, rows) {
+    // Col headers
+    var h = document.createElement('div');
+    h.className = 'rc-col-heads';
+    h.innerHTML = '<span>Charge Name</span><span>Basis</span><span>Rate</span><span></span>';
+    document.getElementById(gridId).appendChild(h);
+    rows.forEach(function(r) { addRCRow(gridId, r.n, r.b, r.r); });
+  }
+
+  renderGrid('rc-intl',  rc.intl);
+  renderGrid('rc-local', rc.local);
+  renderGrid('rc-cust',  rc.cust);
+
+  (rc.destinations || []).forEach(function(d) { addRCDestRow(d); });
+
+  document.getElementById('rc-exrate').value   = rc.exrate   || 0.6556;
+  document.getElementById('rc-validity').value = rc.validity || 60;
+  document.getElementById('rc-coloader').value = rc.coloader || 'GCS';
+  document.getElementById('rc-fuel').value     = rc.fuel_pct || 25;
+
+  var so = rc.signoff || {};
+  document.getElementById('rc-name').value    = so.name    || 'Trent Logan';
+  document.getElementById('rc-title').value   = so.title   || 'National Sales Manager';
+  document.getElementById('rc-company').value = so.company || 'Wallace International Pty Ltd';
+  document.getElementById('rc-phone').value   = so.phone   || '+61 408 970 692';
+  document.getElementById('rc-web').value     = so.web     || 'www.wallaceintl.com.au';
+  document.getElementById('rc-remail').value  = so.email   || '';
+}
+
+function addRCRow(gridId, name, basis, rate) {
+  var row = document.createElement('div');
+  row.className = 'rc-row';
+  row.innerHTML =
+    '<input type="text" placeholder="Charge name" value="' + (name||'') + '" list="dl-' + gridId.replace('rc-','') + '">' +
+    '<input type="text" placeholder="Basis" value="' + (basis||'Flat') + '" list="dl-basis">' +
+    '<input type="number" placeholder="0.00" value="' + (rate||'') + '" step="0.01">' +
+    '<button class="btn-rc-del" type="button">✕</button>';
+  row.querySelector('.btn-rc-del').addEventListener('click', function() { row.parentNode.removeChild(row); });
+  document.getElementById(gridId).appendChild(row);
+}
+
+function addRCDestRow(d) {
+  d = d || {};
+  var row = document.createElement('div');
+  row.className = 'rc-dest-row';
+  row.innerHTML =
+    '<div class="rc-dest-name">' +
+      '<input type="text" placeholder="Destination name" value="' + (d.name||'') + '" list="dl-dest">' +
+      '<button class="btn-rc-del" type="button">✕</button>' +
+    '</div>' +
+    '<div class="rc-dest-charges">' +
+      '<div class="rc-dc-label">Cartage (AUD)</div>' +
+      '<input type="number" class="rc-dc-input" value="' + (d.cartage||125) + '" step="0.01">' +
+      '<div class="rc-dc-label">Fuel Surcharge %</div>' +
+      '<input type="number" class="rc-dc-input" value="' + (d.fuel_pct||25) + '" step="1">' +
+      '<div class="rc-dc-label">Booking Fee (AUD)</div>' +
+      '<input type="number" class="rc-dc-input" value="' + (d.booking||25) + '" step="0.01">' +
+      '<div class="rc-dc-label">Tolls (AUD)</div>' +
+      '<input type="number" class="rc-dc-input" value="' + (d.tolls||25) + '" step="0.01">' +
+    '</div>';
+  row.querySelector('.btn-rc-del').addEventListener('click', function() { row.parentNode.removeChild(row); });
+  document.getElementById('rc-dest').appendChild(row);
+}
+
+function resetRateCard() {
+  if (!confirm('Reset Rate Card to factory defaults? This cannot be undone.')) return;
+  localStorage.removeItem(RC_KEY);
+  renderRateCard(JSON.parse(JSON.stringify(RC_DEFAULTS)));
+}
+
+function populateDestDropdown(rc) {
+  var sel = document.getElementById('f-dest');
+  var current = sel.value;
+  sel.innerHTML = '<option value="">— Select Destination —</option>';
+  (rc.destinations || []).forEach(function(d) {
+    if (!d.name) return;
+    var opt = document.createElement('option');
+    opt.value = d.name;
+    opt.textContent = d.name;
+    sel.appendChild(opt);
+  });
+  // Restore previous selection if it still exists
+  if (current) sel.value = current;
+}
+function onDestinationChange() {
+  var dest = document.getElementById('f-dest').value.trim();
+  if (!dest) return;
+  var rc = getRateCard();
+  var match = null;
+  var dests = rc.destinations || [];
+  for (var i = 0; i < dests.length; i++) {
+    if (dests[i].name.toLowerCase() === dest.toLowerCase()) { match = dests[i]; break; }
+  }
+  if (!match) return;
+
+  var rt = getRT();
+  var cartage = match.cartage;
+  var fuel    = parseFloat((cartage * match.fuel_pct / 100).toFixed(2));
+
+  // Clear delivery charges and re-populate from rate card
+  document.getElementById('cl-del').innerHTML = '';
+  addCharge('cl-del', 'dl-del', 'Cartage to ' + match.name, 'Per CBM / Tonne', cartage);
+  addCharge('cl-del', 'dl-del', 'Fuel Surcharge', 'Flat', fuel);
+  addCharge('cl-del', 'dl-del', 'Booking Fee LCL', 'Flat', match.booking);
+  addCharge('cl-del', 'dl-del', 'Tolls Fee', 'Flat', match.tolls);
+  recalc();
+}
+
+// Also apply rate card defaults to a new quote
+function applyRateCardToForm(rc) {
+  var rt = getRT();
+
+  function applySection(listId, dlId, rows) {
+    document.getElementById(listId).innerHTML = '';
+    rows.forEach(function(r) {
+      var bLow = r.b.toLowerCase();
+      var isUnit = bLow.indexOf('cbm') !== -1 || bLow.indexOf('tonne') !== -1;
+      var amt = isUnit ? parseFloat((r.r * rt).toFixed(2)) : r.r;
+      addCharge(listId, dlId, r.n, r.b, amt);
+    });
+  }
+
+  applySection('cl-intl',  'dl-intl',  rc.intl);
+  applySection('cl-local', 'dl-local', rc.local);
+  applySection('cl-cust',  'dl-cust',  rc.cust);
+
+  document.getElementById('f-ex').value  = rc.exrate   || 0.6556;
+  document.getElementById('f-vd').value  = rc.validity || 60;
+  document.getElementById('f-co').value  = rc.coloader || 'GCS';
+}
+
+// ═══════════════════════════════════════
+// PANEL SWITCHING
+// ═══════════════════════════════════════
+function showPanel(name) {
+  var isDesktop = window.innerWidth >= 900;
+
+  if (isDesktop) {
+    // On desktop: form is always visible on left
+    // Only swap the right-side panel (preview or rates)
+    var rightPanels = ['panel-preview', 'panel-rates'];
+    for (var i = 0; i < rightPanels.length; i++) {
+      document.getElementById(rightPanels[i]).classList.remove('active');
+    }
+    if (name !== 'form') {
+      document.getElementById('panel-' + name).classList.add('active');
+    } else {
+      // Clicking "Build Quote" on desktop — show preview by default on right
+      document.getElementById('panel-preview').classList.add('active');
+    }
+  } else {
+    // On mobile: swap all panels
+    document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  // Mobile tabs
+  document.querySelectorAll('.mob-tab').forEach(function(t) { t.classList.remove('active'); });
+  var mt = document.getElementById('mtab-' + name);
+  if (mt) mt.classList.add('active');
+
+  // Desktop tabs
+  document.querySelectorAll('.desk-tab').forEach(function(t) { t.classList.remove('active'); });
+  var dt = document.getElementById('dtab-' + name);
+  if (dt) dt.classList.add('active');
+
+  if (name === 'preview') buildPreview();
+}
+
+// ═══════════════════════════════════════
+// ACCORDION
+// ═══════════════════════════════════════
+function tog(id) { document.getElementById(id).classList.toggle('open'); }
+
+// ═══════════════════════════════════════
+// DEFAULT DATA
+// ═══════════════════════════════════════
+var DEFAULTS = {
+  intl: [
+    {n:"Int'l Freight / Low Sulphur", b:"Per CBM / Tonne", a:72.00},
+    {n:"GRI & LSS",                   b:"Per CBM / Tonne", a:0.00},
+    {n:"Documentation Fee",           b:"Per Shipment",    a:55.00}
+  ],
+  local: [
+    {n:"Port Service Charge",                  b:"Per CBM / Tonne", a:152.00},
+    {n:"Terminal Handling Charge (THC)",        b:"Per CBM / Tonne", a:28.80},
+    {n:"Delivery Order Fee",                   b:"Flat",            a:120.00},
+    {n:"Sea Cargo Automation",                 b:"Flat",            a:38.00},
+    {n:"Destination Infrastructure Surcharge", b:"Per CBM / Tonne", a:44.80}
+  ],
+  cust: [
+    {n:"Professional Service Fee",   b:"Flat", a:95.00},
+    {n:"Postage & Petties",          b:"Flat", a:15.00},
+    {n:"Status Confirmation CMR",    b:"Flat", a:30.00},
+    {n:"Quarantine PAC Declaration", b:"Flat", a:35.00},
+    {n:"Customs Communication Fee",  b:"Flat", a:21.00}
+  ],
+  del: [
+    {n:"Cartage to Destination", b:"Per CBM / Tonne", a:125.00},
+    {n:"Fuel Surcharge",         b:"Flat",            a:31.25},
+    {n:"Booking Fee LCL",        b:"Flat",            a:25.00},
+    {n:"Tolls Fee",              b:"Flat",            a:25.00}
+  ],
+  notes: [
+    "10% GST applies to all local charges (port, customs & delivery).",
+    "Quote valid for the stated number of days, subject to changes in industry surcharges.",
+    "GRI and Peak Season Surcharges will be applied as applicable.",
+    "Rates based on exchange rate at time of quotation; final amount may vary at sailing.",
+    "All business subject to Wallace International Standard Trading Conditions."
+  ]
+};
+
+// ═══════════════════════════════════════
+// REVENUE TONNE
+// ═══════════════════════════════════════
+function getRT() {
+  var cbm = parseFloat(document.getElementById('f-cbm').value) || 0;
+  var kgs = parseFloat(document.getElementById('f-kgs').value) || 0;
+  return Math.max(cbm, kgs / 1000);
+}
+
+function updateRT() {
+  var rt = getRT();
+  var el = document.getElementById('rt-display');
+  if (el) el.textContent = rt.toFixed(3);
+
+  // Update all Per CBM/Tonne rows
+  document.querySelectorAll('.charge-row').forEach(function(row) {
+    var ins = row.querySelectorAll('input');
+    if (ins.length < 3) return;
+    var basis = ins[1].value.toLowerCase();
+    if (basis.indexOf('cbm') !== -1 || basis.indexOf('tonne') !== -1) {
+      var rate = parseFloat(row.dataset.rate) || 0;
+      if (rate > 0) {
+        ins[2].value = (rate * rt).toFixed(2);
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════
+// ADD CHARGE ROW
+// ═══════════════════════════════════════
+function addCharge(listId, dlId, name, basis, amt) {
+  var n = name || '', b = basis || '', a = (amt !== undefined ? amt : '');
+  var row = document.createElement('div');
+  row.className = 'charge-row';
+
+  // Pre-store rate if Per CBM/Tonne
+  var bLow = b.toLowerCase();
+  if ((bLow.indexOf('cbm') !== -1 || bLow.indexOf('tonne') !== -1) && a !== '') {
+    var rt = getRT();
+    if (rt > 0) row.dataset.rate = (parseFloat(a) / rt).toFixed(6);
+  }
+
+  row.innerHTML =
+    '<input type="text" placeholder="Charge name" value="' + n + '" list="' + dlId + '" autocomplete="off">' +
+    '<input type="text" placeholder="Basis" value="' + b + '" list="dl-basis" autocomplete="off">' +
+    '<input type="number" placeholder="0.00" value="' + a + '" step="0.01">' +
+    '<button class="btn-remove" type="button" title="Remove">✕</button>';
+
+  var inputs = row.querySelectorAll('input');
+  var nameIn  = inputs[0];
+  var basisIn = inputs[1];
+  var amtIn   = inputs[2];
+
+  // When basis changes — re-derive rate
+  basisIn.addEventListener('change', function() {
+    var bv = basisIn.value.toLowerCase();
+    if (bv.indexOf('cbm') !== -1 || bv.indexOf('tonne') !== -1) {
+      var rt = getRT();
+      var cur = parseFloat(amtIn.value) || 0;
+      if (rt > 0 && cur > 0) row.dataset.rate = (cur / rt).toFixed(6);
+    } else {
+      delete row.dataset.rate;
+    }
+    recalc();
+  });
+
+  // When amount manually edited — update stored rate
+  amtIn.addEventListener('change', function() {
+    var bv = basisIn.value.toLowerCase();
+    if (bv.indexOf('cbm') !== -1 || bv.indexOf('tonne') !== -1) {
+      var rt = getRT();
+      var v = parseFloat(amtIn.value) || 0;
+      row.dataset.rate = rt > 0 ? (v / rt).toFixed(6) : '';
+    } else {
+      delete row.dataset.rate;
+    }
+    recalc();
+  });
+
+  // Remove
+  row.querySelector('.btn-remove').addEventListener('click', function() {
+    row.parentNode.removeChild(row);
+    recalc();
+  });
+
+  document.getElementById(listId).appendChild(row);
+}
+
+// ═══════════════════════════════════════
+// ADD NOTE
+// ═══════════════════════════════════════
+function addNote(txt) {
+  var row = document.createElement('div');
+  row.className = 'note-row';
+  row.innerHTML = '<textarea placeholder="Enter note...">' + (txt || '') + '</textarea><button class="btn-remove" type="button">✕</button>';
+  row.querySelector('.btn-remove').addEventListener('click', function() { row.parentNode.removeChild(row); });
+  document.getElementById('notes-list').appendChild(row);
+}
+
+// ═══════════════════════════════════════
+// SUM A CHARGE LIST
+// ═══════════════════════════════════════
+function sumList(listId) {
+  var total = 0;
+  document.querySelectorAll('#' + listId + ' .charge-row').forEach(function(row) {
+    var amtIn = row.querySelectorAll('input')[2];
+    total += parseFloat(amtIn ? amtIn.value : 0) || 0;
+  });
+  return total;
+}
+
+// ═══════════════════════════════════════
+// RECALC — updates live total in bottom bar
+// ═══════════════════════════════════════
+function recalc() {
+  updateRT();
+  var ex = parseFloat(document.getElementById('f-ex').value) || 0.6556;
+  var iUSD = sumList('cl-intl');
+  var grand = (iUSD / ex) + sumList('cl-local') + sumList('cl-cust') + sumList('cl-del');
+  var el = document.getElementById('live-total');
+  if (el) el.textContent = grand.toFixed(2);
+  // Also update preview grand total if visible
+  var pg = document.getElementById('p-grand');
+  if (pg) pg.textContent = grand.toFixed(2);
+}
+
+// ═══════════════════════════════════════
+// BUILD PREVIEW
+// ═══════════════════════════════════════
+function val(id) { var e = document.getElementById(id); return e ? e.value : ''; }
+function setText(id, t) { var e = document.getElementById(id); if (e) e.textContent = t; }
+
+function buildPreview() {
+  recalc();
+  var ex   = parseFloat(val('f-ex')) || 0.6556;
+  var cn   = val('f-cn') || '—';
+  var cp   = val('f-cp');
+  var a1   = val('f-a1'), cy = val('f-cy'), st = val('f-st');
+  var em   = val('f-em'), ph = val('f-ph');
+  var sh   = val('f-sh') || '—', co = val('f-co') || '—';
+  var cbm  = val('f-cbm') || '—', kgs = val('f-kgs') || '—', car = val('f-car') || '—';
+  var ft   = val('f-ft') || 'LCL', ic = val('f-ic') || 'FOB';
+  var dest = val('f-dest') || '—', vd = val('f-vd') || '60';
+  var rawD = val('f-date');
+  var dObj = rawD ? new Date(rawD + 'T00:00:00') : new Date();
+  var dStr = dObj.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  var mStr = dObj.toLocaleDateString('en-AU',{month:'short',year:'numeric'});
+  var addr = [a1,cy,st].filter(Boolean).join(', ');
+
+  var iUSD = sumList('cl-intl'), iAUD = iUSD / ex;
+  var lAUD = sumList('cl-local'), cAUD = sumList('cl-cust'), dAUD = sumList('cl-del');
+  var grand = iAUD + lAUD + cAUD + dAUD;
+
+  setText('p-fi',    ft + ' · ' + ic + ' · ' + mStr);
+  setText('p-date',  'Issued: ' + dStr);
+  setText('p-title', cn + (sh !== '—' ? ' — ' + sh : ''));
+  setText('p-cbm',   cbm); setText('p-kgs', kgs); setText('p-car', car); setText('p-ft', ft);
+  setText('p-grand', grand.toFixed(2));
+  setText('p-sub',   'Based on ' + cbm + ' CBM / ' + kgs + ' KGS — excl. GST on local charges');
+  setText('p-validity', 'Quote valid for ' + vd + ' days · Issued ' + dStr);
+
+  // Details
+  document.getElementById('p-details').innerHTML =
+    det('Client',        cn + (cp ? ' — ' + cp : '')) +
+    det('Address',       addr || '—') +
+    det('Email',         em || '—') +
+    det('Phone',         ph || '—') +
+    det('Shipper',       sh) +
+    det('Co-Loader',     co) +
+    det('Delivery To',   dest) +
+    det('Incoterms',     ic) +
+    det('Exch. Rate',    '1 USD = ' + ex + ' AUD') +
+    det('Validity',      vd + ' days from issue');
+
+  // Charge sections — pass exchange rate for USD→AUD conversion
+  var ps = document.getElementById('p-sections');
+  ps.innerHTML = '';
+  renderSec(ps, 'International Freight', 'cl-intl', 'USD', iUSD, ex);
+  renderSec(ps, 'Local Port Charges',    'cl-local','AUD', lAUD);
+  renderSec(ps, 'Customs Clearance',     'cl-cust', 'AUD', cAUD);
+  renderSec(ps, 'Delivery Charges',      'cl-del',  'AUD', dAUD);
+
+  // Notes
+  var notes = [];
+  document.querySelectorAll('#notes-list textarea').forEach(function(t) { if (t.value.trim()) notes.push(t.value.trim()); });
+  document.getElementById('p-notes-list').innerHTML = notes.map(function(n) { return '<li>' + n + '</li>'; }).join('');
+  document.getElementById('p-notes').style.display = notes.length ? 'block' : 'none';
+
+  // Sign-off
+  var rc = getRateCard();
+  var so = rc.signoff || {};
+  var soBlock = document.getElementById('p-signoff');
+  if (so.name || so.title) {
+    setText('p-so-name',    so.name    || '');
+    setText('p-so-title',   so.title   || '');
+    setText('p-so-company', so.company || '');
+    // Build contact line
+    var contact = [];
+    if (so.phone) contact.push('Ph: ' + so.phone);
+    if (so.web)   contact.push('W: <a href="http://' + so.web + '" target="_blank">' + so.web + '</a>');
+    if (so.email) contact.push('E: <a href="mailto:' + so.email + '">' + so.email + '</a>');
+    document.getElementById('p-so-contact').innerHTML = contact.join('  |  ');
+    soBlock.style.display = 'flex';
+  } else {
+    soBlock.style.display = 'none';
+  }
+}
+
+function det(lbl, val) {
+  return '<div class="qd-detail"><div class="qd-detail-lbl">' + lbl + '</div><div class="qd-detail-val">' + val + '</div></div>';
+}
+
+function renderSec(container, title, listId, cur, total, exRate) {
+  var rows = document.querySelectorAll('#' + listId + ' .charge-row');
+  if (!rows.length) return;
+  var isUSD = (cur === 'USD' && exRate);
+  var html = '';
+
+  rows.forEach(function(row) {
+    var ins = row.querySelectorAll('input');
+    var n = ins[0] ? ins[0].value.trim() : '';
+    var b = ins[1] ? ins[1].value.trim() : '';
+    var a = ins[2] ? (parseFloat(ins[2].value) || 0) : 0;
+    var audAmt = isUSD ? (a / exRate) : null;
+
+    if (isUSD) {
+      html += '<div class="qd-tr qd-tr-usd">' +
+        '<div class="qd-tr-name">' + (n || '—') + '</div>' +
+        (b ? '<div class="qd-tr-basis">' + b + '</div>' : '<div></div>') +
+        '<div class="qd-tr-amt usd-col">USD ' + a.toFixed(2) + '</div>' +
+        '<div class="qd-tr-aud"><span class="aud-usd-small">USD ' + a.toFixed(2) + '</span>AUD ' + audAmt.toFixed(2) + '</div>' +
+        '</div>';
+    } else {
+      html += '<div class="qd-tr ' + (b ? 'has-basis' : 'no-basis') + '">' +
+        '<div class="qd-tr-name">' + (n || '—') + '</div>' +
+        (b ? '<div class="qd-tr-basis">' + b + '</div>' : '') +
+        '<div class="qd-tr-amt">AUD ' + a.toFixed(2) + '</div>' +
+        '</div>';
+    }
+  });
+
+  // Total row
+  if (isUSD) {
+    var audTotal = total / exRate;
+    html += '<div class="qd-tr total qd-tr-usd">' +
+      '<div class="qd-tr-name">Total ' + title + '</div>' +
+      '<div class="qd-tr-basis" style="color:rgba(255,255,255,0.4);background:rgba(255,255,255,0.08);">@ 1 USD = ' + exRate + ' AUD</div>' +
+      '<div class="qd-tr-amt usd-col">USD ' + total.toFixed(2) + '</div>' +
+      '<div class="qd-tr-aud aud-total"><span class="aud-usd-small">USD ' + total.toFixed(2) + '</span>AUD ' + audTotal.toFixed(2) + '</div>' +
+      '</div>';
+  } else {
+    html += '<div class="qd-tr total no-basis">' +
+      '<div class="qd-tr-name">Total ' + title + '</div>' +
+      '<div class="qd-tr-amt">AUD ' + total.toFixed(2) + '</div>' +
+      '</div>';
+  }
+
+  // Section header tag shows both currencies for USD sections
+  var tag = isUSD
+    ? '<div class="qd-sec-tag">USD</div><div class="qd-sec-tag" style="background:var(--olive2);">AUD</div>'
+    : '<div class="qd-sec-tag">AUD</div>';
+
+  var wrap = document.createElement('div');
+  wrap.style.marginBottom = '1rem';
+  wrap.innerHTML =
+    '<div class="qd-sec-head"><h4>' + title + '</h4><div class="qd-sec-line"></div>' + tag + '</div>' +
+    '<div class="qd-table">' + html + '</div>';
+  container.appendChild(wrap);
+}
+
+// ═══════════════════════════════════════
+// PDF
+// ═══════════════════════════════════════
+function savePDF() {
+  // First build the preview with all current data
+  buildPreview();
+  // Force the preview panel to be visible for printing
+  // (print CSS will hide the form panel anyway)
+  var pp = document.getElementById('panel-preview');
+  pp.style.display = 'block';
+  // Give browser time to render everything before print dialog opens
+  setTimeout(function() {
+    window.print();
+    // After printing restore normal panel state
+    setTimeout(function() {
+      pp.style.display = '';
+    }, 1000);
+  }, 600);
+}
+
+// ═══════════════════════════════════════
+// GLOBAL INPUT LISTENER — catches everything
+// ═══════════════════════════════════════
+document.addEventListener('input',  recalc);
+document.addEventListener('change', recalc);
+
+// Destination change — auto-populate delivery charges
+document.getElementById('f-dest').addEventListener('change', onDestinationChange);
+
+// Enter key on password field
+document.getElementById('pw-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkPW();
+});
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('load', function() {
+  initAuth();
+
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  // Load rate card (from storage or defaults)
+  var rc = getRateCard();
+
+  // Render rate card settings panel
+  renderRateCard(rc);
+
+  // Populate destination dropdown from rate card
+  populateDestDropdown(rc);
+
+  // Apply rate card to the quote form
+  applyRateCardToForm(rc);
+
+  // Default notes
+  DEFAULTS.notes.forEach(function(n) { addNote(n); });
+
+  recalc();
+
+  // On desktop, show preview panel by default on the right
+  if (window.innerWidth >= 900) {
+    document.getElementById('panel-preview').classList.add('active');
+    document.getElementById('dtab-preview').classList.add('active');
+    document.getElementById('dtab-form').classList.remove('active');
+    buildPreview();
+  }
+});
+</script>
+<!-- IMPORT MODAL -->
+<div id="import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:#1a1a2e;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:0.9rem;font-weight:700;color:#fff;">📥 Import Quotes</div>
+      <button onclick="closeImportModal()" style="background:rgba(255,255,255,0.1);border:none;border-radius:8px;color:#fff;width:32px;height:32px;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+    <div style="padding:1.2rem;">
+      <p style="font-size:0.82rem;color:#4a4a6a;margin-bottom:0.8rem;line-height:1.5;">
+        Paste your backup text below (the text you copied when exporting), then tap <b>Import</b>.
+      </p>
+      <textarea id="import-text" placeholder="Paste your backup text here..." style="width:100%;height:140px;background:#f5f2eb;border:1.5px solid rgba(122,122,42,0.2);border-radius:8px;padding:0.7rem;font-family:monospace;font-size:0.72rem;color:#333;resize:none;outline:none;-webkit-appearance:none;"></textarea>
+      <div style="display:flex;gap:0.6rem;margin-top:0.8rem;">
+        <button onclick="doImport()" style="flex:1;padding:0.8rem;background:#7a7a2a;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;">📥 Import</button>
+        <button onclick="closeImportModal()" style="padding:0.8rem 1rem;background:none;color:#7a7a2a;border:1.5px solid rgba(122,122,42,0.3);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div id="export-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+    <div style="background:#1a1a2e;padding:1rem 1.2rem;display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:0.9rem;font-weight:700;color:#fff;">📤 Export Quotes Backup</div>
+      <button onclick="closeExportModal()" style="background:rgba(255,255,255,0.1);border:none;border-radius:8px;color:#fff;width:32px;height:32px;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+    <div style="padding:1.2rem;">
+      <p style="font-size:0.82rem;color:#4a4a6a;margin-bottom:0.8rem;line-height:1.5;">
+        <b>Tap "Copy All"</b> then paste into an email, Notes app, or iCloud document to save your backup. To restore, paste the text back using the Import button.
+      </p>
+      <textarea id="export-text" readonly style="width:100%;height:120px;background:#f5f2eb;border:1.5px solid rgba(122,122,42,0.2);border-radius:8px;padding:0.7rem;font-family:monospace;font-size:0.72rem;color:#555;resize:none;outline:none;"></textarea>
+      <div style="display:flex;gap:0.6rem;margin-top:0.8rem;">
+        <button id="copy-btn" onclick="copyExportText()" style="flex:1;padding:0.8rem;background:#7a7a2a;color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;">📋 Copy All</button>
+        <button onclick="closeExportModal()" style="padding:0.8rem 1rem;background:none;color:#7a7a2a;border:1.5px solid rgba(122,122,42,0.3);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
